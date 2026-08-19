@@ -1,6 +1,7 @@
 import asyncio
 import json
 import base64
+import os
 from typing import *
 
 import httpx
@@ -29,7 +30,8 @@ async def android_master_auth(as_client: httpx.AsyncClient, oauth_token: str) ->
         "get_accountid": 1,
         "ACCESS_TOKEN": 1,
         "add_account": 1,
-        "callerSig": "38918a453d07199354f8b19af05ec6562ced5788"
+        "callerSig": "38918a453d07199354f8b19af05ec6562ced5788",
+        "droidguard_results": "dummy123", # https://github.com/simon-weber/gpsoauth/blob/429b7f99fa268315cef7a981408a612fb424a79b/gpsoauth/__init__.py#L153
     }
 
     req = await as_client.post("https://android.googleapis.com/auth", data=data)
@@ -173,7 +175,7 @@ def auth_dialog() -> Tuple[Dict[str, str], str] :
                 "=> https://github.com/mxrch/ghunt_companion\n\n"
                 "[1] (Companion) Put GHunt on listening mode (currently not compatible with docker)\n"
                 "[2] (Companion) Paste base64-encoded authentication\n"
-                "[3] Enter the oauth_token (stats with \"oauth2_4/\")\n"
+                "[3] Enter the oauth_token (starts with \"oauth2_4/\")\n"
                 "[4] Enter the master token (starts with \"aas_et/\")\n"
                 "Choice => ")
 
@@ -195,7 +197,8 @@ def auth_dialog() -> Tuple[Dict[str, str], str] :
         master_token = input(f"Master token => ").strip('" ')
 
     else:
-        exit("Please choose a valid choice. Exiting...")
+        print("Please choose a valid choice. Exiting...")
+        exit()
 
     return oauth_token, master_token
 

@@ -1,3 +1,5 @@
+import os
+
 from ghunt import globals as gb
 from ghunt.objects.base import GHuntCreds
 from ghunt.apis.peoplepa import PeoplePaHttp
@@ -18,10 +20,10 @@ async def hunt(as_client: httpx.AsyncClient, gaia_id: str, json_file: Path=None)
 
     ghunt_creds = await auth.load_and_auth(as_client)
 
-    #gb.rc.print("\n[+] Target found !", style="spring_green3")
+    # #gb.rc.print("\n[+] Target found !", style="spring_green3")
 
     people_pa = PeoplePaHttp(ghunt_creds)
-    # vision_api = VisionHttp(ghunt_creds)
+    # # vision_api = VisionHttp(ghunt_creds)
     is_found, target = await people_pa.people(as_client, gaia_id, params_template="max_details")
     if not is_found:
         exit("[-] The target wasn't found.")
@@ -53,8 +55,8 @@ async def hunt(as_client: httpx.AsyncClient, gaia_id: str, json_file: Path=None)
             print("[+] Custom profile picture !")
             print(f"=> {target.profilePhotos[container].url}")
             
-            # await ia.detect_face(vision_api, as_client, target.profilePhotos[container].url)
-            print()
+    #         # await ia.detect_face(vision_api, as_client, target.profilePhotos[container].url)
+    #         print()
 
     if container in target.coverPhotos:
         if target.coverPhotos[container].isDefault:
@@ -63,7 +65,7 @@ async def hunt(as_client: httpx.AsyncClient, gaia_id: str, json_file: Path=None)
             print("[+] Custom cover picture !")
             print(f"=> {target.coverPhotos[container].url}")
 
-            # await ia.detect_face(vision_api, as_client, target.coverPhotos[container].url)
+    #         # await ia.detect_face(vision_api, as_client, target.coverPhotos[container].url)
             print()
 
     print(f"Last profile edit : {target.sourceIds[container].lastUpdated.strftime('%Y/%m/%d %H:%M:%S (UTC)')}\n")
@@ -95,16 +97,16 @@ async def hunt(as_client: httpx.AsyncClient, gaia_id: str, json_file: Path=None)
 
     gb.rc.print("\n🗺️ Maps data", style="green4")
 
-    err, stats, reviews, photos = await gmaps.get_reviews(as_client, target.personId)
-    gmaps.output(err, stats, reviews, photos, target.personId)
+    err, stats = await gmaps.get_reviews(as_client, gaia_id)
+    gmaps.output(err, stats, gaia_id)
 
     if json_file:
         if container == "PROFILE":
             json_results[f"{container}_CONTAINER"] = {
                 "profile": target,
                 "maps": {
-                    "photos": photos,
-                    "reviews": reviews,
+                    # "photos": photos,
+                    # "reviews": reviews,
                     "stats": stats
                 }
             }

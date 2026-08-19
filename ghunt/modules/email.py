@@ -1,3 +1,5 @@
+import os
+
 from ghunt import globals as gb
 from ghunt.helpers.utils import get_httpx_client
 from ghunt.objects.base import GHuntCreds
@@ -24,7 +26,8 @@ async def hunt(as_client: httpx.AsyncClient, email_address: str, json_file: Path
     # vision_api = VisionHttp(ghunt_creds)
     is_found, target = await people_pa.people_lookup(as_client, email_address, params_template="max_details")
     if not is_found:
-        exit("[-] The target wasn't found.")
+        print("[-] The target wasn't found.")
+        exit()
 
     if json_file:
         json_results = {}
@@ -37,7 +40,8 @@ async def hunt(as_client: httpx.AsyncClient, email_address: str, json_file: Path
             print(f"- {container.title()}")
 
     if not "PROFILE" in containers:
-        exit("[-] Given information does not match a public Google Account.")
+        print("[-] Given information does not match a public Google Account.")
+        exit()
 
     container = "PROFILE"
     
@@ -66,7 +70,10 @@ async def hunt(as_client: httpx.AsyncClient, email_address: str, json_file: Path
             # await ia.detect_face(vision_api, as_client, target.coverPhotos[container].url)
             print()
 
-    print(f"Last profile edit : {target.sourceIds[container].lastUpdated.strftime('%Y/%m/%d %H:%M:%S (UTC)')}\n")
+    if target.sourceIds[container].lastUpdated:
+        print(f"Last profile edit : {target.sourceIds[container].lastUpdated.strftime('%Y/%m/%d %H:%M:%S (UTC)')}\n")
+    else:
+        gb.rc.print(f"Last profile edit : [italic]Not found.[/italic]\n")
     
     if container in target.emails:
         print(f"Email : {target.emails[container].value}")
@@ -114,8 +121,8 @@ async def hunt(as_client: httpx.AsyncClient, email_address: str, json_file: Path
 
     gb.rc.print("\n🗺️ Maps data", style="green4")
 
-    err, stats, reviews, photos = await gmaps.get_reviews(as_client, target.personId)
-    gmaps.output(err, stats, reviews, photos, target.personId)
+    err, stats = await gmaps.get_reviews(as_client, target.personId)
+    gmaps.output(err, stats, target.personId)
 
     gb.rc.print("\n🗓️ Calendar data\n", style="slate_blue3")
 
@@ -139,8 +146,8 @@ async def hunt(as_client: httpx.AsyncClient, email_address: str, json_file: Path
                 "profile": target,
                 "play_games": player if player_results else None,
                 "maps": {
-                    "photos": photos,
-                    "reviews": reviews,
+                    "photos": None,
+                    "reviews": None,
                     "stats": stats
                 },
                 "calendar": {
